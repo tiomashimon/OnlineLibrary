@@ -1,0 +1,15 @@
+[flake8]
+ignore = A003
+filename = *.py
+accept-encodings = utf-8
+inline-quotes = single
+max-complexity = 12
+max-linenumber = 500
+max-line-length = 120
+multiline-quotes = double
+exclude =
+  .git,
+  __pycache__,
+  .venv,
+  build
+  tests/fixtures/*
