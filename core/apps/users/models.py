@@ -7,7 +7,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 class User(AbstractUser):
     username = models.CharField(_('Username'), max_length=100, unique=True)
     email = models.CharField(_('Email'), max_length=255)
-    phone = PhoneNumberField(_('Phone'), null=False, blank=False, unique=True)
+    phone = PhoneNumberField(_('Phone'), null=False, blank=False, unique=False)
     image = models.ImageField(_('Image'), upload_to='users/%Y/%m/%d/', blank=True)
 
     class Meta:
