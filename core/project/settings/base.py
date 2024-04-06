@@ -48,6 +48,9 @@ DJANGO_APPS = [
 ]
 
 LOCAL_APPS = [
+    'core.apps.users',
+    'core.apps.books',
+    'core.apps.orders',
 ]
 
 
@@ -130,6 +133,8 @@ DATABASES = {
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
+
+AUTH_USER_MODEL = 'users.User'
 
 AUTH_PASSWORD_VALIDATORS = [
     {
