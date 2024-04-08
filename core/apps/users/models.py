@@ -21,5 +21,9 @@ class UserCharacteristics(models.Model):
     borrowing_count = models.IntegerField(default=0)
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=4)
 
+    class Meta:
+        verbose_name = _("User's Characteristics")
+        verbose_name_plural = _("User's Characteristics")
+
     def __str__(self):
         return f'{self.user.username} - Sales: {self.sales_count}, Borrowings: {self.borrowing_count}, Rating: {self.rating}'

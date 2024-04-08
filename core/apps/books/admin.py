@@ -3,7 +3,8 @@ from .models import (
     Book,
     BookGenre,
     BookStatus,
-    BookType
+    BookType,
+    Fine
 )
 
 
@@ -11,3 +12,4 @@ admin.site.register(Book)
 admin.site.register(BookType)
 admin.site.register(BookStatus)
 admin.site.register(BookGenre)
+admin.site.register(Fine)

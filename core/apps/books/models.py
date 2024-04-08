@@ -55,3 +55,19 @@ class Book(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Fine(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='fines', verbose_name=_('User'))
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='unpaid_fines', verbose_name=_('Book'))
+    amount = models.IntegerField(_('Amount'))
+    paid = models.BooleanField(_('Is user paid'), default=False)
+    
+
+    class Meta:
+        verbose_name = _("Fine")
+        verbose_name_plural = _("Fines")
+
+
+    def __str__(self):
+        return f'{self.amount}'
