@@ -34,6 +34,6 @@ def auto_assigning_fine():
             send_email_to_user.delay(
                 from_email=from_email,
                 recipient_list=[order.user.email],
-                subject="Fine Notification", 
-                message=f"You have a fine of {days_passed * 10} UAH for overdue book '{book_title}' by {book_author}"
+                subject="Fine Notification - OnlineLibrary", 
+                message=f"Hello {order.user.username},\n\nThis is to inform you that you have been fined for the overdue book '{book_title}' by {book_author}.\n\nFine Amount: {days_passed * 10} UAH\n\nIf you have any questions or concerns regarding this fine, please contact us at {from_email}.\n\nThank you for your attention.\n\nBest regards,\nOnlineLibrary"
             )
