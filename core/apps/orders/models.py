@@ -2,6 +2,8 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from core.apps.books.models import Book
 from core.apps.users.models import User
+from core.apps.users.tasks import send_email_to_user
+from django.conf import settings
 
 class OrderStatus(models.Model):
     name = models.CharField(_('Status'), max_length=255)
@@ -29,3 +31,23 @@ class Order(models.Model):
 
     def __str__(self):
         return f'{self.user.username} - {self.book.title} - {self.status.name}'
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._original_status = self.status
+
+    def save(self, *args, **kwargs):
+        if self.id:  
+            if self.status != self._original_status:
+                new_status = self.status
+                user = self.user
+                from_email = settings.EMAIL_HOST_USER
+
+                subject = 'Change of Order Status'
+                message = f"Dear {user.username},\n\nWe are writing to inform you that the status of your order has been updated.\n\nNew Order Status: {new_status}\n\nIf you have any questions or concerns regarding your order, please feel free to contact us.\n\nThank you for choosing our service.\n\nBest regards,\nOnlineLibrary"
+                from_email = from_email
+                recipient_list = [user.email,]
+
+                send_email_to_user(subject, message, from_email, recipient_list)
+
+        super().save(*args, **kwargs)
