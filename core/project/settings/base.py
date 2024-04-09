@@ -8,7 +8,9 @@ from config import (
     DB_HOST,
     DB_HOST,
     DB_PORT,
-    SECRET_KEY
+    SECRET_KEY,
+    EMAIL_HOST_PASSWORD,
+    EMAIL_HOST_USER
 )
 
 
@@ -154,6 +156,17 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 from datetime import timedelta
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = EMAIL_HOST_USER
+EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = 'Delight sourcesyncco@gmail.com'
+
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),

@@ -13,9 +13,8 @@ app.autodiscover_tasks()
 
 
 app.conf.beat_schedule = {
-    'delete-expired-chats':
-    {
+    'auto-assigning-fine-every-day': {
         'task': 'core.apps.books.tasks.auto_assigning_fine',
-        'schedule': crontab(minute='*/5')
-    }
+        'schedule': crontab(hour=0, minute=0),
+    },
 }
