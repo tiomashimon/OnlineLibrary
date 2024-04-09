@@ -6,6 +6,7 @@ from .models import (
     BookType,
     Fine
 )
+from core.apps.users.serializers import UserSerializer
 
 
 
@@ -30,6 +31,7 @@ class FineSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class BookSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
     genre = BookGenreSerializer()
     status = BookStatusSerializer()
     type = BookTypeSerializer()
