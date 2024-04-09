@@ -39,6 +39,7 @@ services:
 
   celery1:
     environment:
+      - DB_HOST=db
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/0
     build:
@@ -68,6 +69,7 @@ services:
 
   celery-beat:
     environment:
+      - DB_HOST=db
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/0
     build:
@@ -88,6 +90,7 @@ services:
   flower:
     image: mher/flower
     environment:
+      - DB_HOST=db
       - CELERY_BROKER_URL=redis://redis:6379/0
       - FLOWER_PORT=5555
     ports:
