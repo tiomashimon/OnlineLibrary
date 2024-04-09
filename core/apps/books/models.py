@@ -37,16 +37,16 @@ class BookStatus(models.Model):
 
 class Book(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='books_owned')
-    type = models.ForeignKey(BookType, on_delete=models.CASCADE, verbose_name=_('Type'), related_name='books')
+    type = models.ForeignKey(BookType, on_delete=models.SET_NULL, null=True, verbose_name=_('Type'), related_name='books')
     title = models.CharField(_('Title'), max_length=255)
     author = models.CharField(_('Author'), max_length=255)
-    genre = models.ForeignKey(BookGenre, on_delete=models.CASCADE, verbose_name=_('Genre'), related_name='books')
+    genre = models.ForeignKey(BookGenre, on_delete=models.SET_NULL, null=True,  verbose_name=_('Genre'), related_name='books')
     description = models.TextField(_('Description'), blank=True)
     publication_year = models.PositiveIntegerField(_('Publication Year'))
     image = models.ImageField(_('Image'), upload_to='books/%Y/%m/%d/', blank=True)
     available_copies = models.PositiveIntegerField(_('Available Copies'))
     created_at = models.DateTimeField(_('Created At'), auto_now_add=True)
-    status = models.ForeignKey(BookStatus, on_delete=models.CASCADE, verbose_name=_('Status'), related_name='books')
+    status = models.ForeignKey(BookStatus, on_delete=models.SET_NULL, null=True, verbose_name=_('Status'), related_name='books')
     updated_at = models.DateTimeField(_('Updated At'), auto_now=True)
 
     class Meta:
