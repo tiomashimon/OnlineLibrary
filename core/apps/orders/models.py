@@ -18,7 +18,7 @@ class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders', verbose_name=_('User'))
     book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='orders', verbose_name=_('Book'))
     price = models.DecimalField(_('Price'), max_digits=10, decimal_places=2, blank=True, default=0)
-    status = models.ForeignKey(OrderStatus, on_delete=models.CASCADE, verbose_name=_('Status'), related_name='orders')
+    status = models.ForeignKey(OrderStatus, on_delete=models.SET_NULL, null=True, verbose_name=_('Status'), related_name='orders')
     created_at = models.DateTimeField(_('Created At'), auto_now_add=True)
     updated_at = models.DateTimeField(_('Updated At'), auto_now=True)
     booked_until = models.DateTimeField(_('Booked Until'), null=True, blank=True)
