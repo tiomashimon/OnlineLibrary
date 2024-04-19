@@ -6,6 +6,7 @@ from .views import (
     BookStatusListAPIView,
     BookTypeListAPIView,
     FineListAPIView,
+    LikeListCreateAPIView
 )
 
 
@@ -18,6 +19,7 @@ urlpatterns = [
     path('statuses/', BookStatusListAPIView.as_view(), name='status-list'),
     path('types/', BookTypeListAPIView.as_view(), name='type-list'),
     path('fines/', FineListAPIView.as_view(), name='fine-list'),
+    path('likes/', LikeListCreateAPIView.as_view(), name='like')
 ]
 
 urlpatterns += router.urls

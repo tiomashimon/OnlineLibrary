@@ -1,0 +1,164 @@
+{% extends "client/base.html" %}
+
+{% block content %}
+<div class="home-container" style="margin-left: 30px;">
+</div>
+
+<script>
+
+fetch('http://127.0.0.1:8000/api/book/likes/', {
+  headers: {
+    'Authorization': `Bearer ${localStorage.getItem('access_token')}` // Додати токен до заголовків запиту
+  }
+})
+  .then(response => response.json())
+  .then(data => {
+    renderBooks(data);
+  })
+  .catch(error => console.error('Error:', error));
+
+function renderBooks(books) {
+  const homeContainer = document.querySelector('.home-container');
+  const bookList = document.createElement('div');
+  bookList.classList.add('book-list');
+
+  books.forEach(book => {
+    // Запит для отримання повних даних про книгу.
+    fetch(`http://127.0.0.1:8000/api/book/${book.book}/`) // Замінити book.book.id на відповідне поле ідентифікатора книги
+      .then(response => response.json())
+      .then(bookData => {
+        const bookCard = document.createElement('div');
+        bookCard.classList.add('book-card');
+
+        const imgContainer = document.createElement('div');
+        imgContainer.classList.add('img-container');
+
+        const img = document.createElement('img');
+        img.src = bookData.image; // Посилання на фото книги з отриманого JSON
+        img.alt = 'Book Cover';
+        imgContainer.appendChild(img);
+        bookCard.appendChild(imgContainer);
+
+        const bookInfo = document.createElement('div');
+        bookInfo.classList.add('book-info');
+
+        const title = document.createElement('h4');
+        title.textContent = bookData.title; // Назва книги з отриманого JSON
+        bookInfo.appendChild(title);
+
+        const author = document.createElement('p');
+        author.innerHTML = `<strong>Author:</strong> ${bookData.author}`; // Автор книги з отриманого JSON
+        bookInfo.appendChild(author);
+
+        const uploadedBy = document.createElement('p');
+        uploadedBy.innerHTML = `<strong>Uploaded by:</strong> ${bookData.user.username}`; // Користувач, який виклав книгу з отриманого JSON
+        bookInfo.appendChild(uploadedBy);
+
+        const price = document.createElement('p');
+        price.innerHTML = `<strong>Price:</strong> ${bookData.price}`; // Ціна книги з отриманого JSON
+        bookInfo.appendChild(price);
+
+        const copiesAvailable = document.createElement('p');
+        copiesAvailable.innerHTML = `<strong>Copies Available:</strong> ${bookData.available_copies}`; // Кількість доступних копій з отриманого JSON
+        bookInfo.appendChild(copiesAvailable);
+
+        const orderBtn = document.createElement('button');
+        orderBtn.textContent = 'Order';
+        orderBtn.classList.add('order-btn');
+        orderBtn.addEventListener('click', () => {
+          // Дії, які потрібно виконати при натисканні на кнопку "Order"
+          console.log('Order button clicked for book:', bookData.title);
+        });
+        bookInfo.appendChild(orderBtn);
+
+        const unlikeBtn = document.createElement('button');
+        unlikeBtn.textContent = 'Unlike';
+        unlikeBtn.classList.add('unlike-btn');
+        unlikeBtn.addEventListener('click', () => {
+          const userId = document.getElementById('id').textContent; // Отримати id користувача при натисканні кнопки "Unlike"
+          // POST-запит на видалення книги з вподобань
+          fetch('http://127.0.0.1:8000/api/book/likes/', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              book: bookData.id, // Ідентифікатор книги
+              user: userId // Ідентифікатор користувача
+            })
+          })
+            .then(response => {
+              if (response.ok) {
+                console.log('Book unliked successfully:', bookData.title);
+                // Видалити карточку книги зі списку вподобаних
+                bookCard.remove();
+              } else {
+                console.error('Error unliking book:', response.statusText);
+              }
+            })
+            .catch(error => console.error('Error unliking book:', error));
+        });
+        bookInfo.appendChild(unlikeBtn);
+
+        bookCard.appendChild(bookInfo);
+        bookList.appendChild(bookCard);
+
+        homeContainer.appendChild(bookList);
+      })
+      .catch(error => console.error('Error fetching book data:', error));
+  });
+}
+</script>
+<style>
+.book-card {
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  margin: 10px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  display: inline-block;
+  width: 300px;
+}
+
+.img-container {
+  border-radius: 10px 10px 0 0;
+  overflow: hidden;
+}
+
+.img-container img {
+  width: 100%;
+  height: 350px;
+  max-height: 350px;
+}
+
+.book-info {
+  padding: 20px;
+}
+
+.order-btn,
+.unlike-btn {
+  width: calc(50% - 5px); /* Половина ширини карточки з відступами між кнопками */
+  margin-right: 5px; /* Відступ між кнопками */
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.order-btn {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.unlike-btn {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+.order-btn:hover,
+.unlike-btn:hover {
+  background-color: #0056b3;
+}
+</style>
+{% endblock %}

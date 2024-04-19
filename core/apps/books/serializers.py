@@ -4,7 +4,8 @@ from .models import (
     BookGenre,
     BookStatus,
     BookType,
-    Fine
+    Fine,
+    Like,
 )
 from core.apps.users.serializers import UserSerializer
 
@@ -30,6 +31,8 @@ class FineSerializer(serializers.ModelSerializer):
         model = Fine
         fields = '__all__'
 
+
+
 class BookSerializer(serializers.ModelSerializer):
     user = UserSerializer()
     genre = BookGenreSerializer()
@@ -38,4 +41,11 @@ class BookSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Book
+        fields = '__all__'
+
+
+class LikeSerializer(serializers.ModelSerializer):
+    book = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all())
+    class Meta:
+        model = Like
         fields = '__all__'

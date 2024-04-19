@@ -1,0 +1,84 @@
+{% extends "client/base.html" %}
+
+{% block content %}
+<div class="notifications-container" style="margin-top: 50px;">
+</div>
+
+<script>
+fetch('http://127.0.0.1:8000/api/user/notifications/', {
+  headers: {
+    'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+  }
+})
+  .then(response => response.json())
+  .then(data => {
+    renderNotifications(data);
+  })
+  .catch(error => console.error('Error:', error));
+
+function renderNotifications(notifications) {
+  const notificationsContainer = document.querySelector('.notifications-container');
+
+  notifications.forEach(notification => {
+    const notificationElement = document.createElement('div');
+    notificationElement.classList.add('notification');
+
+    // Add background color based on notification type
+    if (notification.type.name === 'OrderStatus') {
+      notificationElement.style.backgroundColor = '#d7ffd4'; // Light green background for OrderStatus
+      notificationElement.style.borderColor = '#00cc44'; // Green border for OrderStatus
+    } else if (notification.type.name === 'Fine') {
+      notificationElement.style.backgroundColor = '#ffcccc'; // Light red background for Fine
+      notificationElement.style.borderColor = '#ff0000'; // Red border for Fine
+    } else if (notification.type.name === 'Deadline') {
+      notificationElement.style.backgroundColor = '#cce5ff'; // Light blue background for Deadline
+      notificationElement.style.borderColor = '#0000ff'; // Blue border for Deadline
+    } else {
+      notificationElement.style.backgroundColor = '#f2f2f2'; // Light gray background for other types
+      notificationElement.style.borderColor = '#808080'; // Gray border for other types
+    }
+
+    const description = document.createElement('p');
+    description.textContent = notification.description;
+    notificationElement.appendChild(description);
+
+    const createdAt = new Date(notification.created_at);
+    const timeDifference = getTimeDifference(createdAt);
+    const timeElement = document.createElement('span');
+    timeElement.textContent = timeDifference;
+    notificationElement.appendChild(timeElement);
+
+    notificationsContainer.appendChild(notificationElement);
+  });
+}
+
+function getTimeDifference(createdAt) {
+  const now = new Date();
+  const diffInMs = now - createdAt;
+
+  if (diffInMs < 60000) { // Less than 1 minute
+    return 'Just now';
+  } else if (diffInMs < 3600000) { // Less than 1 hour
+    const diffInMinutes = Math.floor(diffInMs / 60000);
+    return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
+  } else if (diffInMs < 86400000) { // Less than 1 day
+    const diffInHours = Math.floor(diffInMs / 3600000);
+    return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+  } else { // More than 1 day
+    const diffInDays = Math.floor(diffInMs / 86400000);
+    return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+  }
+}
+</script>
+
+<style>
+.notification {
+  margin-bottom: 10px;
+  margin-left: 20px;
+  margin-right: 10px;
+  padding: 10px;
+  border: 2px solid;
+  border-radius: 5px;
+}
+</style>
+{% endblock %}

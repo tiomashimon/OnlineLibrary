@@ -1,0 +1,99 @@
+{% extends "client/base.html" %}
+
+{% block content %}
+<div class="orders-container" style="margin-top: 50px; display: flex; flex-wrap: wrap; gap: 0;">
+</div>
+
+<script>
+fetch('http://127.0.0.1:8000/api/order/', {
+  headers: {
+    'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+  }
+})
+  .then(response => response.json())
+  .then(data => {
+    renderOrders(data);
+  })
+  .catch(error => console.error('Error:', error));
+
+function renderOrders(orders) {
+  const ordersContainer = document.querySelector('.orders-container');
+
+  orders.forEach(order => {
+    // Запит для отримання повних даних про книгу.
+    fetch(`http://127.0.0.1:8000/api/book/${order.book}/`)
+      .then(response => response.json())
+      .then(bookData => {
+        const orderElement = document.createElement('div');
+        orderElement.classList.add('order-card');
+
+        const bookImage = document.createElement('img');
+        bookImage.src = bookData.image;
+        bookImage.alt = 'Book Cover';
+        orderElement.appendChild(bookImage);
+
+        const orderInfo = document.createElement('div');
+        orderInfo.classList.add('order-info');
+
+        const title = document.createElement('h4');
+        title.textContent = bookData.title;
+        orderInfo.appendChild(title);
+
+        const status = document.createElement('span');
+        status.textContent = `Status: ${order.status.name}`;
+        orderInfo.appendChild(status);
+
+        const price = document.createElement('p');
+        price.textContent = `Price: ${order.price}`;
+        orderInfo.appendChild(price);
+
+        const createdAt = document.createElement('p');
+        createdAt.textContent = `Booked until: ${formatDate(order.booked_until)}`;
+        orderInfo.appendChild(createdAt);
+
+        orderElement.appendChild(orderInfo);
+
+        ordersContainer.appendChild(orderElement);
+      })
+      .catch(error => console.error('Error fetching book data:', error));
+  });
+}
+
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString();
+}
+</script>
+
+<style>
+.order-card {
+  width: calc(17% - 0px); /* Розрахунок ширини карточки на п'ять в рядку без відступів */
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  margin: 10px 20px;
+  padding: 10px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+.order-card img {
+  width: 100%;
+  border-radius: 10px 10px 0 0;
+}
+
+.order-info {
+  padding: 10px;
+}
+
+.order-info h4 {
+  margin-bottom: 5px;
+}
+
+.order-info span {
+  font-weight: bold;
+}
+
+.order-info p {
+  margin: 5px 0;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,18 @@
+<div id="logoutContainer">
+    <button id="logoutButton">Logout</button>
+  </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const logoutButton = document.getElementById('logoutButton');
+  
+      logoutButton.addEventListener('click', () => {
+        // Remove token from local storage
+        localStorage.removeItem('access_token');
+        console.log('Token removed from local storage.');
+        
+        // Redirect to login page or any other desired page
+        window.location.href = '/login'; // Change to your login page URL
+      });
+    });
+  </script>

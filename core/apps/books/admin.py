@@ -4,7 +4,8 @@ from .models import (
     BookGenre,
     BookStatus,
     BookType,
-    Fine
+    Fine,
+    Like
 )
 
 
@@ -13,3 +14,4 @@ admin.site.register(BookType)
 admin.site.register(BookStatus)
 admin.site.register(BookGenre)
 admin.site.register(Fine)
+admin.site.register(Like)
