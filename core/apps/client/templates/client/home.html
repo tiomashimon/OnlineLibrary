@@ -1,0 +1,441 @@
+{% extends "client/base.html" %}
+
+{% block content %}
+<div class="home-container" style="margin-left: 30px;">
+  <!-- Модальне вікно для замовлення книги -->
+  <div id="orderModal" class="modal">
+    <div class="modal-content">
+      <p id="selectedBook"></p>
+      <form id="orderForm" class="order-form">
+        <label for="orderDate">Order Date:</label>
+        <input type="date" id="orderDate" name="orderDate" required>
+        <input type="submit" value="Order Book" class="order-btn-submit">
+      </form>
+    </div>
+  </div>
+
+  <div class="search-container">
+    <input type="text" id="searchInput" placeholder="Search books by title or author">
+    <button id="searchBtn" class="search-btn">Search</button>
+  </div>
+
+  <!-- Контейнер для книг -->
+  <div class="books-container"></div>
+
+
+  <!-- Контейнер пагінації -->
+  <div class="pagination-container">
+    <button id="prevPage" class="pagination-btn">Prev</button>
+    <button id="nextPage" class="pagination-btn">Next</button>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const orderModal = document.getElementById('orderModal');
+    const closeBtn = document.querySelector('.close');
+    const prevBtn = document.getElementById('prevPage');
+    const nextBtn = document.getElementById('nextPage');
+    const searchBtn = document.getElementById('searchBtn');
+
+    closeBtn.addEventListener('click', () => {
+      orderModal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (event) => {
+      if (event.target === orderModal) {
+        orderModal.style.display = 'none';
+      }
+    });
+
+    let currentPage = 1; // Поточна сторінка
+    fetchBooks(currentPage);
+
+    prevBtn.addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        fetchBooks(currentPage);
+      }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      currentPage++;
+      fetchBooks(currentPage);
+    });
+
+    searchBtn.addEventListener('click', () => {
+      const searchInput = document.getElementById('searchInput').value;
+      searchBooks(searchInput);
+    });
+  });
+
+  function fetchBooks(page) {
+    fetch(`http://127.0.0.1:8000/api/book/?page=${page}`)
+      .then(response => response.json())
+      .then(data => {
+        const sortedBooks = {};
+        data.results.forEach(book => {
+          const genre = book.genre.name;
+          if (!(genre in sortedBooks)) {
+            sortedBooks[genre] = [];
+          }
+          sortedBooks[genre].push(book);
+        });
+        renderBooks(sortedBooks);
+
+        // Перевірка, чи потрібно відключити кнопку "Prev"
+        const prevBtn = document.getElementById('prevPage');
+        prevBtn.disabled = !data.previous;
+
+        // Перевірка, чи потрібно відключити кнопку "Next"
+        const nextBtn = document.getElementById('nextPage');
+        nextBtn.disabled = !data.next;
+      })
+      .catch(error => console.error('Error:', error));
+  }
+
+  function renderBooks(sortedBooks) {
+    const booksContainer = document.querySelector('.books-container');
+    booksContainer.innerHTML = ''; // Очищуємо контейнер перед відображенням нових книг
+
+    for (const [genre, books] of Object.entries(sortedBooks)) {
+      const genreSection = document.createElement('div');
+      genreSection.classList.add('genre-section');
+      genreSection.innerHTML = `<h3>${genre}</h3>`;
+
+      const bookList = document.createElement('div');
+      bookList.classList.add('book-list');
+
+      books.forEach(book => {
+        const bookCard = document.createElement('div');
+        bookCard.classList.add('book-card');
+
+        const imgContainer = document.createElement('div');
+        imgContainer.classList.add('img-container');
+
+        const img = document.createElement('img');
+        img.src = book.image;
+        img.alt = 'Book Cover';
+        imgContainer.appendChild(img);
+        bookCard.appendChild(imgContainer);
+
+        const bookInfo = document.createElement('div');
+        bookInfo.classList.add('book-info');
+
+        const title = document.createElement('h4');
+        title.textContent = book.title;
+        bookInfo.appendChild(title);
+
+        const author = document.createElement('p');
+        author.innerHTML = `<strong>Author:</strong> ${book.author}`;
+        bookInfo.appendChild(author);
+
+        const publisher = document.createElement('p');
+        publisher.innerHTML = `<strong>Publisher:</strong> ${book.user.username}`;
+        bookInfo.appendChild(publisher);
+
+        const price = document.createElement('p');
+        price.innerHTML = `<strong>Price:</strong> ${book.price}`;
+        bookInfo.appendChild(price);
+
+        const copiesAvailable = document.createElement('p');
+        copiesAvailable.innerHTML = `<strong>Copies Available:</strong> ${book.available_copies}`;
+        bookInfo.appendChild(copiesAvailable);
+
+        const orderBtn = document.createElement('button');
+        orderBtn.textContent = 'Order';
+        orderBtn.classList.add('order-btn');
+        orderBtn.addEventListener('click', () => openOrderModal(book));
+        bookInfo.appendChild(orderBtn);
+
+        const favoritesBtn = document.createElement('button');
+        favoritesBtn.textContent = 'Like';
+        favoritesBtn.classList.add('favorites-btn');
+        favoritesBtn.addEventListener('click', async () => {
+          const userId = document.getElementById('id').textContent; // Отримати id користувача
+          const likeData = {
+            book: book.id,
+            user: userId
+          };
+
+          try {
+            const response = await fetch('http://127.0.0.1:8000/api/book/likes/', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(likeData),
+            });
+
+            if (!response.ok) {
+              throw new Error('Like request failed.');
+            }
+
+            // Змінити текст кнопки та колір
+            if (favoritesBtn.textContent === 'Like') {
+              favoritesBtn.textContent = 'Unlike';
+              favoritesBtn.style.backgroundColor = '#dc3545'; // Червоний колір для Unlike
+            } else {
+              favoritesBtn.textContent = 'Like';
+              favoritesBtn.style.backgroundColor = '#28a745'; // Зелений колір для Like
+            }
+
+            console.log('Like/Unlike request successful.');
+          } catch (error) {
+            console.error('Error with Like/Unlike request:', error);
+          }
+        });
+        bookInfo.appendChild(favoritesBtn);
+
+        bookCard.appendChild(bookInfo);
+        bookList.appendChild(bookCard);
+      });
+
+      genreSection.appendChild(bookList);
+      booksContainer.appendChild(genreSection);
+    }
+  }
+
+  async function openOrderModal(book) {
+    const orderModal = document.getElementById('orderModal');
+    orderModal.style.display = 'block';
+
+    const selectedBook = document.getElementById('selectedBook');
+    selectedBook.textContent = `Selected Book: ${book.title}`;
+
+    const orderForm = document.getElementById('orderForm');
+    orderForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const orderDate = document.getElementById('orderDate').value;
+      const userId = document.getElementById('id').textContent;
+
+      console.log(userId)
+
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/order/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            book: book.id,
+            booked_until: orderDate,
+            user: userId,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Order request failed.');
+        }
+
+        const data = await response.json();
+        console.log('Order placed:', data);
+        const orderModal = document.getElementById('orderModal');
+        orderModal.style.display = 'none';
+        orderForm.reset();
+        window.location.href = "/";
+      } catch (error) {
+        console.error('Error placing order:', error);
+      }
+    });
+  }
+
+  function searchBooks(query) {
+  fetch(`http://127.0.0.1:8000/api/book/?search=${query}`)
+    .then(response => response.json())
+    .then(data => {
+      const sortedBooks = {};
+      data.results.forEach(book => {
+        const genre = book.genre.name;
+        if (!(genre in sortedBooks)) {
+          sortedBooks[genre] = [];
+        }
+        sortedBooks[genre].push(book);
+      });
+      renderBooks(sortedBooks);
+
+      // Оновлення пагінації
+      const prevBtn = document.getElementById('prevPage');
+      const nextBtn = document.getElementById('nextPage');
+      prevBtn.disabled = !data.previous;
+      nextBtn.disabled = !data.next;
+    })
+    .catch(error => console.error('Error:', error));
+}
+</script>
+
+<style>
+/* Стилі для пошуку */
+.search-container {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+#searchInput {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-right: 5px;
+  margin-top: 20px;
+  z-index: 1000; 
+}
+
+#searchBtn {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#searchBtn:hover {
+  background-color: #0056b3;
+}
+
+
+
+.book-card {
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  margin: 10px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  display: inline-block;
+  width: 300px;
+}
+
+.img-container {
+  border-radius: 10px 10px 0 0;
+  overflow: hidden;
+}
+
+.img-container img {
+  width: 100%;
+  height: 400px;
+  max-height: 400px;
+}
+
+.book-info {
+  padding: 20px;
+}
+
+.order-btn,
+.favorites-btn {
+  width: calc(50% - 5px); /* Половина ширини карточки з відступами між кнопками */
+  margin-right: 5px; /* Відступ між кнопками */
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.order-btn {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.order-btn-submit {
+  width: 100%; /* Заповнює всю ширину форми */
+  margin-top: 20px; /* Відступ від інших елементів */
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: #007bff; /* Синій колір для кнопки "Order Book" */
+  color: #fff;
+  transition: background-color 0.3s ease;
+}
+
+.order-btn-submit:hover {
+  background-color: #0056b3; /* Темно-синій колір при наведенні на кнопку "Order Book" */
+}
+
+.favorites-btn {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.order-btn:hover,
+.favorites-btn:hover {
+  background-color: #0056b3;
+}
+
+/* Стилі для модального вікна */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 40%;
+  height: 250px;
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.order-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Вирівнювання в центрі */
+}
+
+label {
+  margin-bottom: 10px; /* Відступ між елементами форми */
+}
+
+input[type="date"] {
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  margin-bottom: 20px;
+}
+
+.pagination-container {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000; /* Забезпечує, щоб кнопки були вище інших елементів */
+}
+
+.pagination-btn {
+  padding: 10px 20px;
+  margin: 0 5px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.pagination-btn:hover {
+  background-color: #0056b3;
+}
+
+</style>
+{% endblock %}

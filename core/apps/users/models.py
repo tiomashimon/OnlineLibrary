@@ -8,7 +8,7 @@ class User(AbstractUser):
     username = models.CharField(_('Username'), max_length=100, unique=True)
     email = models.CharField(_('Email'), max_length=255)
     phone = PhoneNumberField(_('Phone'), null=False, blank=False, unique=False)
-    image = models.ImageField(_('Image'), upload_to='users/%Y/%m/%d/', blank=True)
+    image = models.ImageField(_('Image'), upload_to='users/%Y/%m/%d/', blank=True, default='defaults/def.png')
 
     class Meta:
         verbose_name = _("user")
@@ -27,3 +27,24 @@ class UserCharacteristics(models.Model):
 
     def __str__(self):
         return f'{self.user.username} - Sales: {self.sales_count}, Borrowings: {self.borrowing_count}, Rating: {self.rating}'
+
+
+
+class NotificationType(models.Model):
+    name = models.CharField(_('Status'), max_length=255)
+
+    class Meta:
+        verbose_name = _("Notification Status")
+        verbose_name_plural = _("Notification Statuses")
+
+    def __str__(self):
+        return self.name
+    
+
+
+    
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name=_('User'))
+    description = models.CharField(_('Description') ,max_length=999)
+    created_at = models.DateTimeField(_('Created at'), auto_now_add=True)
+    type = models.ForeignKey(NotificationType, on_delete=models.CASCADE, verbose_name='Type')

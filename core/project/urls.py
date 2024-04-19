@@ -37,6 +37,7 @@ urlpatterns = [
     path('api/book/', include('core.apps.books.urls')),
     path('api/user/', include('core.apps.users.urls')),
     path('api/order/', include('core.apps.orders.urls')),
+    path('', include('core.apps.client.urls')),
 ]
 
 

@@ -48,6 +48,7 @@ class Book(models.Model):
     created_at = models.DateTimeField(_('Created At'), auto_now_add=True)
     status = models.ForeignKey(BookStatus, on_delete=models.SET_NULL, null=True, verbose_name=_('Status'), related_name='books')
     updated_at = models.DateTimeField(_('Updated At'), auto_now=True)
+    price = models.IntegerField(_('Price'), default=0 )
 
     class Meta:
         verbose_name = _("Book")
@@ -71,3 +72,18 @@ class Fine(models.Model):
 
     def __str__(self):
         return f'{self.amount}'
+
+
+class Like(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='likes', verbose_name=_('User'))
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='user_likes', verbose_name=_('Book'))
+    
+
+    class Meta:
+        verbose_name = _("Like")
+        verbose_name_plural = _("Likes")
+
+
+    def __str__(self):
+        return f'{self.user} liked {self.book}'
+    

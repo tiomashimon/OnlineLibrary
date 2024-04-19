@@ -1,0 +1,91 @@
+{% extends "client/base.html" %}
+
+{% block content %}
+<style>
+  /* Styles for fine information */
+  #finesContainer {
+    margin-top: 20px;
+    margin-left: 30px;
+    margin-right: 20px;
+  }
+
+  .fine-item {
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .fine-item p {
+    margin: 5px 0;
+  }
+
+  .fine-item hr {
+    margin-top: 10px;
+    border: 1px solid #ccc;
+  }
+
+  .fine-item p strong {
+    font-weight: bold;
+    margin-right: 5px;
+  }
+
+  /* Styles for paid fine */
+  .paid-fine {
+    color: green; /* Change to your preferred color */
+    font-weight: bold;
+  }
+
+  /* Styles for unpaid fine */
+  .unpaid-fine {
+    color: red; /* Change to your preferred color */
+    font-weight: bold;
+  }
+</style>
+
+<div id="finesContainer"></div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    const token = localStorage.getItem('access_token');
+
+    if (token) {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/book/fines/', {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch fines data.');
+        }
+
+        const finesData = await response.json();
+        const finesContainer = document.getElementById('finesContainer');
+
+        finesData.forEach(async (fine) => {
+          const bookResponse = await fetch(`http://127.0.0.1:8000/api/book/${fine.book}/`);
+          const bookData = await bookResponse.json();
+
+          const fineItem = document.createElement('div');
+          fineItem.classList.add('fine-item');
+          fineItem.innerHTML = `
+            <p><strong>Fine Amount:</strong> ${fine.amount} UAH</p>
+            <p><strong>Book Title:</strong> ${bookData.title}</p>
+            <p><strong>User Email:</strong> ${bookData.user.email}</p>
+            <p><strong>Status:</strong> <span class="${fine.paid ? 'paid-fine' : 'unpaid-fine'}">${fine.paid ? 'Paid' : 'Unpaid'}</span></p>
+            <hr>
+          `;
+          finesContainer.appendChild(fineItem);
+        });
+      } catch (error) {
+        console.error('Error fetching fines:', error);
+      }
+    } else {
+      console.error('Token for fines not found in local storage.');
+    }
+  });
+</script>
+{% endblock %}

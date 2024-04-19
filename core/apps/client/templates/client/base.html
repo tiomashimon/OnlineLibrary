@@ -1,0 +1,153 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+
+  <!-- Boxicons CSS -->
+  <link href="https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css" rel="stylesheet">
+
+  <title>{% block title %}{% endblock %}</title>
+</head>
+
+<body>
+  <nav class="sidebar close">
+    <header>
+      <div class="image-text">
+        <a href="">
+          <span class="image" style="border-radius: 50%; overflow: hidden; width: 50px; height: 50px; display: inline-block; margin-right: 10px;">
+            <!-- Image will be inserted here -->
+          </span>
+        </a>
+
+        <div class="text logo-text">
+          <span class="name">{% block username %}Username{% endblock %}</span>
+        </div>
+      </div>
+      <span id="id" style="display:none;">id</span>
+
+      <i class="bx bx-chevron-right toggle"></i>
+    </header>
+
+    <div class="menu-bar">
+      <!-- Add your menu items here -->
+      <ul class="menu-links">
+        <li class="nav-link">
+          <a href="{% url 'home' %}">
+            <i class="bx bx-home-alt icon"></i>
+            <span class="text nav-text">Home</span>
+          </a>
+        </li>
+
+        <li class="nav-link">
+          <a href="{% url 'orders' %}">
+            <i class="bx bx-bar-chart-alt-2 icon"></i>
+            <span class="text nav-text">Orders</span>
+          </a>
+        </li>
+
+        <li class="nav-link">
+          <a href="{% url 'notifications' %}">
+            <i class="bx bx-bell icon"></i>
+            <span class="text nav-text">Notifications</span>
+          </a>
+        </li>
+
+        <li class="nav-link">
+          <a href="{% url 'likes' %}">
+            <i class="bx bx-heart icon"></i>
+            <span class="text nav-text">Likes</span>
+          </a>
+        </li>
+
+        <li class="nav-link">
+          <a href="{% url 'fines' %}">
+            <i class="bx bx-wallet icon"></i>
+            <span class="text nav-text">Fines</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="bottom-content">
+        <li>
+          <a href="{% url 'logout' %}">
+            <i class="bx bx-log-out icon"></i>
+            <span class="text nav-text">Logout</span>
+          </a>
+        </li>
+      </div>
+    </div>
+  </nav>
+
+  <section class="home">
+    <!-- Content will be inserted here -->
+    {% block content %}{% endblock %}
+  </section>
+
+  <!-- JavaScript -->
+  <script>
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      window.location.href = '/login'; // Change to your login page URL
+    }
+    fetch('http://127.0.0.1:8000/api/user/', {
+    headers: {
+      'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    const username = data.username;
+    const image = data.image;
+    const id = data.id;
+    console.log(id)
+
+    // Insert username
+    const usernameElement = document.querySelector('.name');
+    usernameElement.textContent = username;
+    
+
+    // Insert image
+    const imageElement = document.querySelector('.image');
+    if (image) {
+      imageElement.innerHTML = `<img src="${image}" alt="" style="width: 90%; height: auto;">`;
+    }
+
+    idElement = document.getElementById('id')
+    idElement.textContent = id;
+  })
+  .catch(error => console.error('Error:', error));
+
+    const body = document.querySelector('body'),
+      sidebar = body.querySelector('nav'),
+      toggle = body.querySelector(".toggle"),
+      searchBtn = body.querySelector(".search-box"),
+      modeSwitch = body.querySelector(".toggle-switch"),
+      modeText = body.querySelector(".mode-text");
+
+    toggle.addEventListener("click", () => {
+      sidebar.classList.toggle("close");
+    });
+
+    searchBtn.addEventListener("click", () => {
+      sidebar.classList.remove("close");
+    });
+
+    modeSwitch.addEventListener("click", () => {
+      body.classList.toggle("dark");
+      if (body.classList.contains("dark")) {
+        modeText.innerText = "Light mode";
+      } else {
+        modeText.innerText = "Dark mode";
+      }
+    });
+  </script>
+</body>
+
+</html>
